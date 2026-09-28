@@ -19,12 +19,24 @@ public class Main {
     / Реализуйте удаление из листа всех дубликатов */
     @Test
     void Exercise_1() {
+        var result = intList.stream()
+                .distinct()
+                .toList()
+                .toString();
+        assertEquals("[5, 2, 10, 9, 4, 3, 1, 13]", result);
     }
 
     /* Exercise 2 /
     / Найдите в списке целых чисел 3-е наибольшее число (пример: 5 2 10 9 4 3 10 1 13 => 10) */
     @Test
     void Exercise_2() {
+        var result = intList.stream()
+                .sorted((x, y) -> Integer.compare(y, x))
+                .skip(2)
+                .findFirst()
+                .orElse(-1)
+                .toString();
+        assertEquals("10", result);
     }
 
     /* Exercise 3 /
@@ -32,6 +44,14 @@ public class Main {
     в отличие от прошлой задачи здесь разные 10 считает за одно число) */
     @Test
     void Exercise_3() {
+        var result = intList.stream()
+                .distinct()
+                .sorted((x, y) -> Integer.compare(y, x))
+                .skip(2)
+                .findFirst()
+                .orElse(-1)
+                .toString();
+        assertEquals("9", result);
     }
 
     private record Employee(String name, int age, String role) {
@@ -53,6 +73,14 @@ public class Main {
     необходимо получить список имен 3 самых старших сотрудников с должностью «Инженер», в порядке убывания возраста */
     @Test
     void Exercise_4() {
+        var result = employeeList.stream()
+                .filter(x -> x.role.equals("Инженер"))
+                .sorted((x, y) -> Integer.compare(y.age, x.age))
+                .limit(3)
+                .map(Employee::name)
+                .toList()
+                .toString();
+        assertEquals("[Пахом, Евлампий, Коловрат]", result);
     }
 
     /* Exercise 5 /
@@ -60,6 +88,11 @@ public class Main {
     посчитайте средний возраст сотрудников с должностью «Инженер» */
     @Test
     void Exercise_5() {
+        var result = employeeList.stream()
+                .filter(x -> x.role.equals("Инженер"))
+                .collect(Collectors.averagingInt(x -> x.age))
+                .toString();
+        assertEquals("61.5", result);
     }
 
     /* arraylist for exercise 6 and 8, also for generation stringLine */
@@ -72,6 +105,10 @@ public class Main {
     / Найдите в списке слов самое длинное */
     @Test
     void Exercise_6() {
+        var result = stringList.stream()
+                .max(Comparator.comparingInt(String::length))
+                .orElse("");
+        assertEquals("someverylongstring", result);
     }
 
     /* string for exercise 7 generated from stringList */
@@ -82,6 +119,14 @@ public class Main {
     Постройте хеш-мапы, в которой будут хранится пары: слово - сколько раз оно встречается во входной строке */
     @Test
     void Exercise_7() {
+        var anotherList = stringLine.split(" ");   // зачем даётся строка если её нельзя стримить? Есть какой-то лайфхак по подсчёту substring в строке?
+        var result = Arrays.stream(anotherList)
+                .distinct()
+                .collect(Collectors.toMap(x -> x, y -> Arrays.stream(anotherList)
+                        .filter(z -> z.equals(y))
+                        .count())) // "сколько раз слово встречается во входной строке" имеет двоякое значение, мы либо считаем совпадения целого слова с разделением на пробелы, либо общее количество совпадений по строке, даже как часть другого слова
+                .toString();
+        assertEquals("{shortstr2=1, shortstring1=3, notlongstring=1, someverylongstring=1, hhortstring1=1}", result);
     }
 
     /* Exercise 8 /
@@ -89,6 +134,12 @@ public class Main {
     если слова имеют одинаковую длины, то должен быть сохранен алфавитный порядок */
     @Test
     void Exercise_8() {
+        var result = stringList.stream()
+                .sorted(Comparator.naturalOrder()) // что значит "сохранён" алфавитный порядок если его нет? Если сохранить порядок без алфавитного, то этот sorted не нужен
+                .sorted(Comparator.comparing(String::length))
+                .toList()
+                .toString();
+        assertEquals("[shortstr2, hhortstring1, shortstring1, shortstring1, shortstring1, notlongstring, someverylongstring]", result);
     }
 
     /* array of string for exercise 9 */
@@ -106,5 +157,11 @@ public class Main {
     найдите среди всех слов самое длинное, если таких слов несколько, получите любое из них */
     @Test
     void Exercise_9() {
+        var result = Arrays.stream(stringArray)
+                .mapMulti((x, consumer) -> Arrays.stream(x.split(" "))
+                        .forEach(consumer))
+                .max(Comparator.comparing(x -> x.toString().length()))
+                .orElse("");
+        assertEquals("consectetur", result);
     }
 }
